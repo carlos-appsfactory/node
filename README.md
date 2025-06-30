@@ -152,3 +152,49 @@ import { saludar } from './utils.mjs';
 
 console.log(saludar("Usuario"));
 ```
+
+## Asincronía
+La programación, por defecto, se ejecuta de forma síncrona. Esto significa que el programa se ejecuta línea por línea. En cada línea realiza una operación y no pasa a la siguiente hasta que la actual se haya completado.
+
+Sin embargo, JavaScript también tiene soporte para operaciones asíncronas. En una operación asíncrona, el programa lanza una tarea y continúa con la siguiente línea, sin esperar a que esa tarea termine. Cuando la tarea finaliza, su resultado se procesa más adelante, gracias al sistema de colas de JavaScript (conocido como el event loop).
+
+La asíncronía se utiliza sobre todo en operaciones de entrada y salida, es decir, cuando se trabaja con bases de datos, ficheros, APIs externas, etc.
+
+Por ejemplo, si desarrollamos un servidor web y realizamos las consultas a la base de datos de forma síncrona, los usuarios podrían bloquear el servidor. Es decir, si un usuario está haciendo una consulta, mientras esta no finalice, ningún otro usuario podría ser atendido.
+
+En cambio, si la consulta se hace de forma asíncrona, el servidor delegará la operación en segundo plano y quedará libre para seguir atendiendo otras peticiones. Una vez que la consulta finalice, se retomará la ejecución para devolverle el resultado al usuario correspondiente.
+
+### Callbacks
+Un `callback` es una función que se pasa como parámetro y que será llamada más tarde (de ahí su nombre). Esta era la forma en la que están definidas muchas funciones clásicas de JavaScript y Node.js.
+
+Un ejemplo de función asíncrona nativa de JavaScript es `setTimeout`. Esta función recibe como parámetros una función y un número de milisegundos. Lo que hace es establecer un temporizador y, una vez transcurrido ese tiempo, ejecuta la función que se pasó como parámetro. Aquí se puede ver con un ejemplo:
+
+```js
+console.log("Inicio de la ejecución");
+
+setTimeout(() => {
+    console.log("Esto se muestra después de 1 segundo");
+}, 1000);
+
+console.log("Fin de la ejecución");
+```
+
+Otro ejemplo, esta vez con Node.js, se puede ver con la función `fs.readFile`. Esta función recibe la ruta de un fichero, su codificación y una función callback. Entonces comienza a leer el fichero en segundo plano, mientras el programa continúa ejecutándose. Cuando finaliza la lectura, se ejecuta la función callback.
+
+```js
+import fs from "node:fs";
+
+console.log("Leyendo el archivo...");
+
+fs.readFile("./text.txt", "utf8", (err, data) => {
+    if (err) {
+        console.error("Error al leer el archivo:", err);
+    } else {
+        console.log("Contenido del archivo:", data);
+    }
+});
+
+console.log("El programa sigue ejecutandose mietras el archivo se lee...");
+```
+
+### Promises
