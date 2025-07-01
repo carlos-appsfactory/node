@@ -220,7 +220,7 @@ Para trabajar con una promesa exitosa (estado `fulfilled`) utilizamos el método
 Para ver cómo funcionan las promesas, podemos utilizar fetch para hacer una petición a una API externa. Esta es una operación de entrada/salida a través de la red, lo que significa que es asíncrona y, por tanto, tendremos que utilizar promises.
 
 ```js
-fetch("https://rickandmortyapi.com/api/character") // Hace una petición a
+fetch("https://rickandmortyapi.com/api/character")
   .then((response) => response.json())
   .then((json) => console.log(json))
   .catch((error) => console.log(error));
@@ -236,7 +236,135 @@ Finalmente, si alguna de las tres operaciones anteriores falla, se ejecutará el
 
 #### Crear promesas
 
-<!-- Página 75 -->
+Se pueden crear promesas utilizando el constructor `Promise`, que recibe una función `callback` como argumento. Esta función, a su vez, recibe dos funciones como parámetros: `resolve` y `reject`. La función `resolve` se utiliza para marcar la promesa como resuelta, y `reject` se utiliza para marcarla como rechazada.
 
-• Async/await: Async/await acts as a wrapper over promises to make code more readable (syntax
-sugar). Currently is the most popular way of handling asynchronous operations.
+A continuación, podemos ver un ejemplo de cómo crear una promesa que se resuelve después de un segundo:
+
+```js
+const setTimeoutPromise = (time) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve();
+    }, time);
+  });
+};
+
+console.log("Empieza la ejecución");
+setTimeoutPromise(1000).then(() => console.log("promesa dentro de un segundo"));
+console.log("Acaba la ejecución");
+```
+
+#### Promesas paralelas
+
+Otra ventaja de las promesas es que se pueden ejecutar varias en paralelo. Para ello, se crea un array de promesas y se ejecutan todas de forma asíncrona.
+
+Tenemos dos formas principales de gestionar los resultados de un array de promesas:
+
+- `Promise.all()`: todas las promesas deben cumplirse; si una falla, se rechaza todo.
+- `Promise.race()`: se resuelve o se rechaza con la primera promesa que lo haga.
+
+Veámoslo con un ejemplo. Este código crea una promesa que se resuelve después de un tiempo aleatorio entre 0 y 100 milisegundos:
+
+```js
+const randomTimeOutPromise = (num) => {
+  return new Promise((resolve, reject) => {
+    const time = Math.floor(Math.random() * 100);
+    setTimeout(() => {
+      console.log(`La promesa ${num} se resolvió tras ${time}ms`);
+      resolve(time);
+    }, time);
+  });
+};
+```
+
+Con el método `Promise.all`, podemos ejecutar varias promesas y recibir una nueva promesa que agrupa los resultados de todas ellas:
+
+```js
+Promise.all([
+  randomTimeOutPromise(1),
+  randomTimeOutPromise(2),
+  randomTimeOutPromise(3),
+  randomTimeOutPromise(4),
+  randomTimeOutPromise(5),
+]).then((results) => {
+  console.log("Resultados:", results);
+});
+```
+
+En este ejemplo, se muestra por pantalla el resultado de cada promesa una vez que se resuelve. Finalmente, se muestra el array con todos los resultados.
+
+Como esta ejecución se basa únicamente en tiempos aleatorios, siempre será exitosa. Sin embargo, este tipo de ejecución también podría aplicarse a llamadas a bases de datos o APIs externas. En ese caso, sería necesario añadir un `catch` para manejar errores. Si alguna de las promesas fallara, se ignorarían los resultados del resto y se ejecutaría el bloque del `catch`.
+
+Por otro lado, también podemos utilizar `Promise.race`. Este método devuelve una promesa que se resuelve o se rechaza tan pronto como lo haga la primera promesa del array. No obstante, es importante tener en cuenta que las demás promesas seguirán ejecutándose, aunque ya no se utilicen sus resultados:
+
+```js
+Promise.race([
+  randomTimeOutPromise(1),
+  randomTimeOutPromise(2),
+  randomTimeOutPromise(3),
+  randomTimeOutPromise(4),
+  randomTimeOutPromise(5),
+]).then((results) => {
+  console.log("Resultados:", results);
+});
+```
+
+En este caso, al ejecutar el código veremos el resultado de la primera promesa que se haya completado, y ese será el valor final capturado por el `then`. Sin embargo, los resultados del resto de promesas también se seguirán mostrando por consola, ya que continúan ejecutándose aunque no se utilicen.
+
+#### Manejar errores
+
+Cuando una promesa se cumple correctamente, utilizamos `resolve` para marcarla como `resuelta`. En caso de que queramos forzar el fallo de una promesa, debemos utilizar reject.
+
+Veamos un ejemplo con una función que devuelve una promesa resuelta o rechazada según el parámetro recibido:
+
+```js
+const generatePromise = (shouldFail) => {
+  return new Promise((resolve, reject) => {
+    if (shouldFail) {
+      return reject(new Error("Ha fallado"));
+    }
+    resolve("Ha funcionado");
+  });
+};
+
+generatePromise(true)
+  .then((result) => console.log("Result:", result))
+  .catch((error) => console.log("Error message:", error));
+```
+
+En este caso, como el argumento `shouldFail` es `true`, se llamará a `reject`, lo que hará que se ejecute el bloque `catch` y se muestre el mensaje de error.
+
+#### Async / Await
+
+Las palabras clave `async` y `await` son syntactic sugar para utilizar las promesas. Gracias a esta sintaxis, el código es más legible.
+
+La palabra `async` se utiliza para definir una función asincrona, mientras que `await` se utiliza para pausar una función asíncrona y esperar a que se resuelva una promesa antes de continuar con el proceso.
+
+Las funciones con `async` devuelven una promesa, es decir, que estas dos funciones hacen lo mismo:
+
+```js
+const asyncFunction = async (generateError) => {
+  if (generateError) {
+    throw new Error("Error generated");
+  }
+  return 1;
+};
+
+asyncFunction().then((result) => console.log(result));
+asyncFunction(true).catch((error) => console.log(error));
+
+const promiseFunction = (generateError) =>
+  new Promise((resolve, reject) => {
+    if (generateError) {
+      reject(new Error("Error generated"));
+    }
+    resolve(1);
+  });
+
+promiseFunction().then((result) => console.log(result));
+promiseFunction(true).catch((error) => console.log(error));
+```
+
+Por su parte, el `await` sería el equivalente al `then`. Podemos usarlo para escribir una función
+
+<!-- 81 -->
